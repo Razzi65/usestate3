@@ -52,12 +52,10 @@ const Todo = () => {
 
             querySnapshot.forEach((doc) => {
                 dataArr.push({
-                    details: doc.data().details,
-                    id: doc.id
+                    details: doc.data().details
                 })
             })
-            setToDoList(dataArr)
-            
+            setToDoList(dataArr)   
         }
 
 catch (error) {
