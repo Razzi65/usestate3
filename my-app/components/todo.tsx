@@ -27,18 +27,14 @@ const Todo = () => {
 
 
     const onClickHandle = async () => {
-
         const docRef = await addDoc(collection(db, "toDo23"), addToDo)
-
         console.log("Document written with ID: ", docRef.id);
-
         setToDoList([...toDoList, { ...addToDo, id: docRef.id }])
-
+        setEvent("")
     }
 
-    useEffect(() => {
-        getData()}, []
-    )
+
+    useEffect(() => { getData()  }, [])
 
 
 
@@ -46,43 +42,103 @@ const Todo = () => {
         try {
             setLoader(true)
             const querySnapshot = await getDocs(collection(db, "toDo23"));
-            
-
             let dataArr: ToDoType[] = []
-
             querySnapshot.forEach((doc) => {
                 dataArr.push({
-                    details: doc.data().details
+                    details: doc.data().details,
+                    id: doc.id
                 })
             })
-            setToDoList(dataArr)   
+            setToDoList(dataArr)
         }
-
-catch (error) {
-        console.log("error>>>",error);
-
+        catch (error) {
+            console.log("error>>>", error);
+        }
+        finally { setLoader(false) }
     }
-    finally{setLoader(false)}
-}
+
+
+    const onDeleteHandler = (item: ToDoType) => {
+        const filteredArr = toDoList.filter((value) => {
+            if (item.id != value.id) {
+                return (value)
+            }
+        })
+        setToDoList(filteredArr)
+    }
+
+
+
+    const [isEdit, setIsEditing] = useState(false)
+    const [oldId, setOldID] = useState<string>()
+
+    const onEditHandler = (item: ToDoType) => {
+        setIsEditing(true)
+        setOldID(item.id)
+        setEvent(item.details)
+    }
+
+
+    const onUpdateHandler = () => {
+        const newArray = toDoList.map((value) => {
+
+            if (oldId == value.id) {
+                let newitem: ToDoType = {
+                    details: event,
+                    id: value.id
+                }
+                return newitem
+            }
+            else { return value }
+        })
+        setIsEditing(false)
+        setToDoList(newArray)
+        setEvent("")
+    }
+
+    const [done, setDone]= useState([])
+
+    const onDoneHandler = (item) => {
+        let doneArr:[] = [] 
+        toDoList.map ((value)=> {
+           
+            if(item.id == value.id){
+                doneArr.push(value.details)
+            }
+        })
+        setDone([...doneArr])
+    }
+
 
 
     return (
         <div className="container m-5 ">
             <div className="row">
                 <div className="col-md-4">
-                    <input onChange={(e) => onChangeHandle(e)} type="text" className="form-control" placeholder="Write Task" aria-label="First name" />
+                    <input onChange={(e) => onChangeHandle(e)} value={event} type="text" className="form-control" placeholder="Write Task" aria-label="First name" />
                     <br />
-                    <button onClick={() => onClickHandle()} type="button" className="btn btn-sm btn-outline-info ">Add</button>
-                    <br/>
-                    {loader==true? "Loading.." : ""}
+
+                    {isEdit == false ?
+                        <button onClick={() => onClickHandle()} type="button" className="btn btn-sm btn-outline-info ">Add</button> :
+                        <button onClick={() => onUpdateHandler()} type="button" className="btn btn-sm btn-outline-info ">Update</button>}
+
+                    <br />
+                    {loader == true ? "Loading.." : ""}
                 </div>
 
                 <div className="m-4"> {
                     toDoList.map((item) => {
-                        return <li>{item.details}</li>
+                        return <li>{item.details}
+
+                            <button onClick={() => onDeleteHandler(item)} type="button" className="btn btn-sm btn-outline-info ms-2 ">Del</button>
+                            <button onClick={() => onEditHandler(item)} type="button" className="btn btn-sm btn-outline-info ms-2 ">Edit</button>
+                            <button onClick={() => onDoneHandler(item)} type="button" className="btn btn-sm btn-outline-info ms-2 ">Done</button>
+                        </li>
                     })
                 }
                 </div>
+                <hr/> <br/>
+                {done}
             </div>
         </div>
     )
