@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
 import { db } from "../firebase/config"
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import { collection, addDoc, getDocs, setDoc } from "firebase/firestore"
+import { doc, updateDoc } from "firebase/firestore";
+
 
 
 
@@ -34,7 +36,7 @@ const Todo = () => {
     }
 
 
-    useEffect(() => { getData()  }, [])
+    useEffect(() => { getData() }, [])
 
 
 
@@ -79,8 +81,16 @@ const Todo = () => {
     }
 
 
-    const onUpdateHandler = () => {
+    const onUpdateHandler =async (oldId) => {
+
+        const updatedDoc = doc(db, "toDo23", oldId)
+        await updateDoc(updatedDoc, {details:event})
+      
         const newArray = toDoList.map((value) => {
+
+         
+    
+    
 
             if (oldId == value.id) {
                 let newitem: ToDoType = {
@@ -94,20 +104,27 @@ const Todo = () => {
         setIsEditing(false)
         setToDoList(newArray)
         setEvent("")
+       
     }
 
-    const [done, setDone]= useState([])
+    const [done, setDone] = useState<ToDoType[]>([])
 
-    const onDoneHandler = (item) => {
-        let doneArr:[] = [] 
-        toDoList.map ((value)=> {
-           
-            if(item.id == value.id){
-                doneArr.push(value.details)
+    const onDoneHandler = async (item) => {
+        let doneArr: ToDoType[] = []
+
+
+        toDoList.map((value) => {
+
+            if (item.id == value.id)
+             {
+                doneArr.push({ details: value.details, id: value.id })
             }
+
         })
         setDone([...doneArr])
     }
+
+
 
 
 
@@ -120,7 +137,7 @@ const Todo = () => {
 
                     {isEdit == false ?
                         <button onClick={() => onClickHandle()} type="button" className="btn btn-sm btn-outline-info ">Add</button> :
-                        <button onClick={() => onUpdateHandler()} type="button" className="btn btn-sm btn-outline-info ">Update</button>}
+                        <button onClick={() => onUpdateHandler(oldId)} type="button" className="btn btn-sm btn-outline-info ">Update</button>}
 
                     <br />
                     {loader == true ? "Loading.." : ""}
@@ -137,8 +154,10 @@ const Todo = () => {
                     })
                 }
                 </div>
-                <hr/> <br/>
-                {done}
+                <hr /> <br />
+                {done.map((item) => {
+                    return <li> {item.details} </li>
+                })}
             </div>
         </div>
     )
