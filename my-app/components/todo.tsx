@@ -109,19 +109,22 @@ const Todo = () => {
 
     const [done, setDone] = useState<ToDoType[]>([])
 
-    const onDoneHandler = async (item) => {
+    const onDoneHandler =  (item) => {
         let doneArr: ToDoType[] = []
 
 
-        toDoList.map((value) => {
+        toDoList.forEach((value) => {
+
+            
 
             if (item.id == value.id)
              {
-                doneArr.push({ details: value.details, id: value.id })
+                let a = { details: value.details, id: value.id }
+                doneArr.push(a)
             }
 
         })
-        setDone([...doneArr])
+        setDone([...doneArr ])
     }
 
 
